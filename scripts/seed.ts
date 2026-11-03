@@ -78,5 +78,41 @@ for (const user of users) {
   console.log(`✓ ${user.role}: ${user.email}`);
 }
 
+interface DemoProject {
+  name: string;
+  address: string;
+}
+
+const projects: DemoProject[] = [
+  { name: "ЖК «Северный»", address: "г. Москва, ул. Северная, 12" },
+  { name: "Бизнес-центр «Высота»", address: "г. Москва, Ленинградский пр-т, 48" },
+  { name: "Склад на Заводской", address: "г. Химки, ул. Заводская, 7" },
+];
+
+async function ensureProject(project: DemoProject, createdBy: string): Promise<string> {
+  const { data: existing, error: selectError } = await admin
+    .from("projects")
+    .select("id")
+    .eq("name", project.name)
+    .maybeSingle();
+
+  if (selectError) throw selectError;
+  if (existing) return existing.id;
+
+  const { data, error } = await admin
+    .from("projects")
+    .insert({ ...project, created_by: createdBy })
+    .select("id")
+    .single();
+
+  if (error) throw error;
+  return data.id;
+}
+
+for (const project of projects) {
+  await ensureProject(project, ids["manager@demo.local"]);
+  console.log(`✓ объект: ${project.name}`);
+}
+
 console.log(`Seed complete. Password: ${password}`);
 console.log("Manager id:", ids["manager@demo.local"]);

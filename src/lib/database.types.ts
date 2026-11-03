@@ -126,6 +126,12 @@ isOneToOne: false
                            },
 "is_manager":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"project_is_active":
+{ Args: { "p_project_id": string }; Returns: boolean
+                           },
+"worker_has_project_task":
+{ Args: { "p_project_id": string }; Returns: boolean
                            }
           }
           Enums: {
