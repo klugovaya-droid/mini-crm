@@ -94,16 +94,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: subscription } = client.auth.onAuthStateChange((event, nextSession) => {
       if (!active || event === "INITIAL_SESSION") return;
 
-      sessionRef.current = nextSession;
-      setSession(nextSession);
-      setLoading(false);
-
       if (event === "SIGNED_OUT") {
+        // A late SIGNED_OUT from the previous session must not clear a new login.
+        if (sessionRef.current) return;
+        setSession(null);
         setProfile(null);
         setProfileError(null);
+        setLoading(false);
         return;
       }
 
+      sessionRef.current = nextSession;
+      setSession(nextSession);
+      setLoading(false);
       void loadProfile(nextSession);
     });
 

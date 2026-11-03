@@ -26,7 +26,13 @@ export default async function setup(): Promise<() => Promise<void>> {
     env: process.env,
   });
 
-  execFileSync("npm", ["run", "build"], {
+  execFileSync("npm", ["run", "typecheck"], {
+    cwd: projectRoot,
+    stdio: "inherit",
+    env: process.env,
+  });
+
+  execFileSync("node", ["node_modules/vite/bin/vite.js", "build", "--mode", "test"], {
     cwd: projectRoot,
     stdio: "inherit",
     env: process.env,
