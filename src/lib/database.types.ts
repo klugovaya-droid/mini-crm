@@ -130,6 +130,25 @@ isOneToOne: false
 "project_is_active":
 { Args: { "p_project_id": string }; Returns: boolean
                            },
+"transition_task":
+{ Args: { "p_comment"?: string,"p_task_id": string,"p_to_status": Database["public"]['Enums']["task_status"] }; Returns: {
+              "assignee_id": string,
+"author_id": string,
+"created_at": string,
+"deleted_at": string | null,
+"description": string,
+"id": string,
+"project_id": string,
+"status": Database["public"]['Enums']["task_status"],
+"title": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "tasks"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "worker_has_project_task":
 { Args: { "p_project_id": string }; Returns: boolean
                            }

@@ -49,7 +49,7 @@ afterAll(async () => {
 describe("projects RLS", () => {
   it("shows seeded projects to a manager", async () => {
     const manager = await signIn("manager@demo.local");
-    const { data, error } = await manager.from("projects").select("id, name");
+    const { data, error } = await manager.from("projects").select("id, name").is("deleted_at", null);
 
     expect(error).toBeNull();
     expect(data).toHaveLength(3);

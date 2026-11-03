@@ -61,7 +61,7 @@ afterAll(async () => {
 describe("tasks RLS", () => {
   it("shows all seeded tasks to a manager", async () => {
     const manager = await signIn("manager@demo.local");
-    const { data, error } = await manager.from("tasks").select("id");
+    const { data, error } = await manager.from("tasks").select("id").is("deleted_at", null);
 
     expect(error).toBeNull();
     expect(data).toHaveLength(6);
@@ -69,12 +69,12 @@ describe("tasks RLS", () => {
 
   it("shows only assigned tasks to each worker", async () => {
     const worker1 = await signIn("worker1@demo.local");
-    const { data: tasks1, error: error1 } = await worker1.from("tasks").select("id");
+    const { data: tasks1, error: error1 } = await worker1.from("tasks").select("id").is("deleted_at", null);
     expect(error1).toBeNull();
     expect(tasks1).toHaveLength(3);
 
     const worker2 = await signIn("worker2@demo.local");
-    const { data: tasks2, error: error2 } = await worker2.from("tasks").select("id");
+    const { data: tasks2, error: error2 } = await worker2.from("tasks").select("id").is("deleted_at", null);
     expect(error2).toBeNull();
     expect(tasks2).toHaveLength(3);
 
