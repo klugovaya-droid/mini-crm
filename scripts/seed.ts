@@ -109,9 +109,90 @@ async function ensureProject(project: DemoProject, createdBy: string): Promise<s
   return data.id;
 }
 
+const projectIds: Record<string, string> = {};
+
 for (const project of projects) {
-  await ensureProject(project, ids["manager@demo.local"]);
+  projectIds[project.name] = await ensureProject(project, ids["manager@demo.local"]);
   console.log(`✓ объект: ${project.name}`);
+}
+
+interface DemoTask {
+  project: string;
+  title: string;
+  description: string;
+  assignee: string;
+}
+
+const tasks: DemoTask[] = [
+  {
+    project: "ЖК «Северный»",
+    title: "Проверить армирование фундамента",
+    description: "Сверить армирование с проектной документацией и зафиксировать замечания.",
+    assignee: "worker1@demo.local",
+  },
+  {
+    project: "ЖК «Северный»",
+    title: "Согласовать поставку бетона",
+    description: "Подтвердить график поставки и марку бетона на неделю.",
+    assignee: "worker1@demo.local",
+  },
+  {
+    project: "Бизнес-центр «Высота»",
+    title: "Проверить остекление 3 этажа",
+    description: "Проверить геометрию и крепления витражей.",
+    assignee: "worker2@demo.local",
+  },
+  {
+    project: "Бизнес-центр «Высота»",
+    title: "Устранить замечания по вентиляции",
+    description: "Закрыть замечания технадзора по воздуховодам.",
+    assignee: "worker1@demo.local",
+  },
+  {
+    project: "Склад на Заводской",
+    title: "Принять площадку под монтаж",
+    description: "Проверить основание и подготовить акт приёмки.",
+    assignee: "worker2@demo.local",
+  },
+  {
+    project: "Склад на Заводской",
+    title: "Подготовить исполнительную документацию",
+    description: "Собрать исполнительные схемы по каркасу.",
+    assignee: "worker2@demo.local",
+  },
+];
+
+async function ensureTask(task: DemoTask): Promise<string> {
+  const projectId = projectIds[task.project];
+  const { data: existing, error: selectError } = await admin
+    .from("tasks")
+    .select("id")
+    .eq("project_id", projectId)
+    .eq("title", task.title)
+    .maybeSingle();
+
+  if (selectError) throw selectError;
+  if (existing) return existing.id;
+
+  const { data, error } = await admin
+    .from("tasks")
+    .insert({
+      project_id: projectId,
+      title: task.title,
+      description: task.description,
+      assignee_id: ids[task.assignee],
+      author_id: ids["manager@demo.local"],
+    })
+    .select("id")
+    .single();
+
+  if (error) throw error;
+  return data.id;
+}
+
+for (const task of tasks) {
+  await ensureTask(task);
+  console.log(`✓ задача: ${task.title}`);
 }
 
 console.log(`Seed complete. Password: ${password}`);

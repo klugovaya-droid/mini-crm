@@ -69,7 +69,8 @@ describe("projects", () => {
     await page.getByRole("heading", { name: "Мои задачи" }).waitFor();
 
     await page.getByRole("link", { name: "Объекты" }).click();
-    await page.getByText("Объектов пока нет").waitFor();
+    await page.getByRole("heading", { name: "Объекты" }).waitFor();
+    await page.getByRole("link", { name: "ЖК «Северный»" }).waitFor();
 
     expect(await page.getByRole("button", { name: "Создать объект" }).count()).toBe(0);
   });

@@ -1,4 +1,4 @@
-import { Archive, ArrowLeft, Pencil } from "lucide-react";
+import { Archive, ArrowLeft, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { EmptyState } from "@/components/empty-state";
@@ -10,15 +10,22 @@ import { useAuth } from "@/features/auth/auth-context";
 import { ProjectArchiveDialog } from "@/features/projects/project-archive-dialog";
 import { ProjectFormDialog } from "@/features/projects/project-form-dialog";
 import { useProject } from "@/features/projects/project-queries";
-import type { Project } from "@/types/domain";
+import { TaskArchiveDialog } from "@/features/tasks/task-archive-dialog";
+import { TaskCard } from "@/features/tasks/task-card";
+import { TaskFormDialog } from "@/features/tasks/task-form-dialog";
+import { useProjectTasks } from "@/features/tasks/task-queries";
+import type { Project, TaskWithPeople } from "@/types/domain";
 
 export function ObjectPage() {
   const { projectId } = useParams();
   const { profile } = useAuth();
   const navigate = useNavigate();
   const { data: project, isLoading, error, refetch } = useProject(projectId);
+  const { data: tasks, isLoading: tasksLoading, error: tasksError } = useProjectTasks(projectId);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const [archivingTask, setArchivingTask] = useState<TaskWithPeople | null>(null);
 
   const canManage = profile?.role === "manager";
 
@@ -98,13 +105,74 @@ export function ObjectPage() {
       />
 
       <section aria-labelledby="project-tasks-title">
-        <h2 id="project-tasks-title" className="mb-3 text-lg font-medium">
-          Задачи
-        </h2>
-        <EmptyState
-          title="Задачи появятся на следующем шаге"
-          description="После подключения задач здесь будет список работ по объекту."
-        />
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 id="project-tasks-title" className="text-lg font-medium">
+            Задачи
+          </h2>
+          {canManage ? (
+            <Button onClick={() => setCreateTaskOpen(true)}>
+              <Plus className="size-4" aria-hidden="true" />
+              Создать задачу
+            </Button>
+          ) : null}
+        </div>
+
+        {tasksLoading ? (
+          <div className="space-y-3">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+        ) : null}
+
+        {tasksError ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Не удалось загрузить задачи</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              {tasksError instanceof Error ? tasksError.message : "Попробуйте ещё раз."}
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {!tasksLoading && !tasksError && tasks?.length === 0 ? (
+          <EmptyState
+            title="Задач пока нет"
+            description={
+              canManage
+                ? "Создайте первую задачу и назначьте исполнителя."
+                : "Когда руководитель назначит вам задачу по этому объекту, она появится здесь."
+            }
+            action={
+              canManage ? (
+                <Button onClick={() => setCreateTaskOpen(true)}>
+                  <Plus className="size-4" aria-hidden="true" />
+                  Создать задачу
+                </Button>
+              ) : null
+            }
+          />
+        ) : null}
+
+        {tasks && tasks.length > 0 ? (
+          <div className="space-y-3">
+            {tasks.map((task) => (
+              <div key={task.id} className="relative">
+                <TaskCard task={task} />
+                {canManage ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-3 bottom-2 z-10"
+                    onClick={() => setArchivingTask(task)}
+                  >
+                    Архивировать
+                  </Button>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        ) : null}
       </section>
 
       <ProjectFormDialog
@@ -120,6 +188,21 @@ export function ObjectPage() {
         open={archiveOpen}
         onOpenChange={setArchiveOpen}
         onArchived={() => navigate("/objects")}
+      />
+
+      <TaskFormDialog
+        open={createTaskOpen}
+        onOpenChange={setCreateTaskOpen}
+        defaultProjectId={project.id}
+        onCreated={(task) => navigate(`/tasks/${task.id}`)}
+      />
+
+      <TaskArchiveDialog
+        task={archivingTask}
+        open={Boolean(archivingTask)}
+        onOpenChange={(open) => {
+          if (!open) setArchivingTask(null);
+        }}
       />
     </>
   );

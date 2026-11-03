@@ -38,7 +38,7 @@ describe("authentication", () => {
     await login(page, "manager@demo.local");
 
     await page.getByRole("heading", { name: "Объекты" }).waitFor();
-    expect(await page.getByText("Ирина Петрова").isVisible()).toBe(true);
+    expect(await page.getByRole("button", { name: /Ирина Петрова/ }).isVisible()).toBe(true);
   });
 
   it("logs a worker in and redirects to my tasks", async () => {
@@ -46,7 +46,7 @@ describe("authentication", () => {
     await login(page, "worker1@demo.local");
 
     await page.getByRole("heading", { name: "Мои задачи" }).waitFor();
-    expect(await page.getByText("Алексей Смирнов").isVisible()).toBe(true);
+    expect(await page.getByRole("button", { name: /Алексей Смирнов/ }).isVisible()).toBe(true);
   });
 
   it("shows an error for a wrong password", async () => {

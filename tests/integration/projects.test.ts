@@ -55,12 +55,13 @@ describe("projects RLS", () => {
     expect(data).toHaveLength(3);
   });
 
-  it("shows no projects to a worker without tasks", async () => {
+  it("shows a worker only projects with assigned tasks", async () => {
     const worker = await signIn("worker1@demo.local");
-    const { data, error } = await worker.from("projects").select("id");
+    const { data, error } = await worker.from("projects").select("id, name");
 
     expect(error).toBeNull();
-    expect(data).toEqual([]);
+    expect(data).toHaveLength(2);
+    expect(data?.some((project) => project.name === "Склад на Заводской")).toBe(false);
   });
 
   it("does not let a worker create a project", async () => {
