@@ -116,7 +116,7 @@ if (history?.[0]) {
 }
 
 const { error: signupError } = await anon.auth.signUp({
-  email: `verify-signup-${Date.now()}@example.com`,
+  email: `verify-signup-${Date.now()}@gmail.com`,
   password: "Verify1234!",
 });
 check("Открытая регистрация выключена", signupError !== null);

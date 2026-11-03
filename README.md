@@ -4,6 +4,13 @@
 
 Главный акцент — безопасность на уровне PostgreSQL/Supabase: ограничения работают даже при прямом запросе к API, а не только в интерфейсе.
 
+## Демо
+
+- GitHub Pages: <https://klugovaya-droid.github.io/mini-crm/>
+- Vercel: <https://mini-crm-teal-iota.vercel.app>
+
+Тестовые доступы передаются отдельно вместе со сдачей.
+
 ## Стек
 
 - React 19 + TypeScript + Vite
