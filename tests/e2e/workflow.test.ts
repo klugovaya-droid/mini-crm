@@ -30,6 +30,7 @@ async function login(page: Page, email: string): Promise<void> {
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Пароль").fill(password);
   await page.getByRole("button", { name: "Войти" }).click();
+  await page.waitForURL((url) => url.pathname !== "/login");
 }
 
 async function createTask(page: Page, title: string): Promise<string> {

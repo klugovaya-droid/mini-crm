@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -41,21 +42,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(Boolean(client));
   const [profileError, setProfileError] = useState<string | null>(null);
+  const sessionRef = useRef<Session | null>(null);
 
   const loadProfile = useCallback(
     async (nextSession: Session | null) => {
       if (!client) return;
       if (!nextSession) {
-        setProfile(null);
-        setProfileError(null);
+        if (!sessionRef.current) {
+          setProfile(null);
+          setProfileError(null);
+        }
         return;
       }
 
+      const userId = nextSession.user.id;
       const { data, error } = await client
         .from("profiles")
         .select("*")
-        .eq("id", nextSession.user.id)
+        .eq("id", userId)
         .maybeSingle();
+
+      if (sessionRef.current?.user.id !== userId) return;
 
       if (error) {
         setProfile(null);
@@ -76,15 +83,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     void client.auth.getSession().then(({ data }) => {
       if (!active) return;
-      setSession(data.session);
+      if (data.session) {
+        sessionRef.current = data.session;
+        setSession(data.session);
+        void loadProfile(data.session);
+      }
       setLoading(false);
-      void loadProfile(data.session);
     });
 
-    const { data: subscription } = client.auth.onAuthStateChange((_event, nextSession) => {
-      if (!active) return;
+    const { data: subscription } = client.auth.onAuthStateChange((event, nextSession) => {
+      if (!active || event === "INITIAL_SESSION") return;
+
+      sessionRef.current = nextSession;
       setSession(nextSession);
       setLoading(false);
+
+      if (event === "SIGNED_OUT") {
+        setProfile(null);
+        setProfileError(null);
+        return;
+      }
+
       void loadProfile(nextSession);
     });
 
@@ -99,7 +118,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!client) throw new Error("Supabase не настроен.");
       const { data, error } = await client.auth.signInWithPassword({ email, password });
       if (error) throw new Error(mapAuthError(error.message));
+      sessionRef.current = data.session;
       setSession(data.session);
+      setLoading(false);
       await loadProfile(data.session);
     },
     [client, loadProfile],
@@ -108,9 +129,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     if (!client) return;
     await client.auth.signOut();
+    sessionRef.current = null;
     setSession(null);
     setProfile(null);
     setProfileError(null);
+    setLoading(false);
   }, [client]);
 
   const value = useMemo<AuthContextValue>(
