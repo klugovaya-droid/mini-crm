@@ -12,3 +12,7 @@ export type TaskWithPeople = Task & {
   author: Pick<Profile, "id" | "full_name"> | null;
   project: Pick<Project, "id" | "name" | "address"> | null;
 };
+
+export type HistoryEntryWithPerson = TaskHistoryEntry & {
+  changed_by_profile: Pick<Profile, "id" | "full_name"> | null;
+};

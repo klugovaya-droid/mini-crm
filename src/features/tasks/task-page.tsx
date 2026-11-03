@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/features/auth/auth-context";
+import { HistoryTimeline } from "@/features/tasks/history-timeline";
 import { TaskArchiveDialog } from "@/features/tasks/task-archive-dialog";
 import { TaskFormDialog } from "@/features/tasks/task-form-dialog";
 import { useTask } from "@/features/tasks/task-queries";
+import { WorkflowActions } from "@/features/tasks/workflow-actions";
 import { formatDateTime } from "@/lib/format";
 import type { TaskWithPeople } from "@/types/domain";
 
@@ -94,6 +96,8 @@ export function TaskPage() {
         }
       />
 
+      <WorkflowActions task={task} />
+
       <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
         <Card>
           <CardHeader>
@@ -139,10 +143,7 @@ export function TaskPage() {
         <h2 id="task-history-title" className="mb-3 text-lg font-medium">
           История
         </h2>
-        <EmptyState
-          title="История появится на следующем шаге"
-          description="После подключения workflow здесь будут действия и комментарии."
-        />
+        <HistoryTimeline taskId={task.id} />
       </section>
 
       <TaskFormDialog

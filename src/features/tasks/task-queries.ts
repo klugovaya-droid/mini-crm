@@ -9,12 +9,14 @@ import {
   updateTask,
   type TaskInput,
 } from "@/features/tasks/task-api";
-import type { TaskWithPeople } from "@/types/domain";
+import { listTaskHistory, transitionTask } from "@/features/tasks/workflow-api";
+import type { TaskStatus, TaskWithPeople } from "@/types/domain";
 
 export const taskKeys = {
   project: (projectId: string) => ["project-tasks", projectId] as const,
   mine: (userId: string) => ["my-tasks", userId] as const,
   detail: (id: string) => ["task", id] as const,
+  history: (id: string) => ["task-history", id] as const,
 };
 
 function invalidateTaskLists(
@@ -47,6 +49,36 @@ export function useTask(id: string | undefined) {
     queryKey: taskKeys.detail(id ?? ""),
     queryFn: () => getTask(id!),
     enabled: Boolean(id),
+  });
+}
+
+export function useTaskHistory(taskId: string | undefined) {
+  return useQuery({
+    queryKey: taskKeys.history(taskId ?? ""),
+    queryFn: () => listTaskHistory(taskId!),
+    enabled: Boolean(taskId),
+  });
+}
+
+export function useTransitionTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      taskId,
+      to,
+      comment,
+    }: {
+      taskId: string;
+      to: TaskStatus;
+      comment?: string;
+    }) => transitionTask(taskId, to, comment),
+    onSuccess: (_data, variables) => {
+      void queryClient.invalidateQueries({ queryKey: taskKeys.detail(variables.taskId) });
+      void queryClient.invalidateQueries({ queryKey: taskKeys.history(variables.taskId) });
+      void queryClient.invalidateQueries({ queryKey: ["project-tasks"] });
+      void queryClient.invalidateQueries({ queryKey: ["my-tasks"] });
+    },
   });
 }
 
