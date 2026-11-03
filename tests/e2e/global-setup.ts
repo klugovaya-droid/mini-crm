@@ -20,6 +20,12 @@ async function waitForServer(): Promise<void> {
 }
 
 export default async function setup(): Promise<() => Promise<void>> {
+  execFileSync("npm", ["run", "db:prepare"], {
+    cwd: projectRoot,
+    stdio: "inherit",
+    env: process.env,
+  });
+
   execFileSync("npm", ["run", "build"], {
     cwd: projectRoot,
     stdio: "inherit",

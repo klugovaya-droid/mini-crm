@@ -121,7 +121,12 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "current_user_role":
+{ Args: Record<PropertyKey, never>; Returns: Database["public"]['Enums']["app_role"]
+                           },
+"is_manager":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           }
           }
           Enums: {
             "app_role": "manager"|"worker","task_status": "new"|"in_progress"|"on_review"|"accepted"|"rework"

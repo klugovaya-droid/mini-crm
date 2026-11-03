@@ -16,6 +16,7 @@
     "db:start": "supabase start -x studio,realtime,storage-api,imgproxy,mailpit,postgres-meta,edge-runtime,logflare,vector,supavisor",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
+    "db:prepare": "tsx scripts/prepare-local-db.ts",
     "db:types": "supabase gen types typescript --local > src/lib/database.types.ts",
     "env:local": "tsx scripts/env-local.ts",
     "seed:local": "tsx scripts/seed.ts --local",
